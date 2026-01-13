@@ -69,7 +69,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
       // MEDFIX burada fdrSql kontrolü eklenmeli
       fiQuery.sql = fdrSql.refValue?.ToString() ?? "";
 
-      fiQuery.LogQueryAndParams();
+      //fiQuery.LogQueryAndParams();
 
       return GetDbHelper().SqlDeleteQuery(fiQuery);
     }
