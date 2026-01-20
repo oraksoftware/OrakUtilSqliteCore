@@ -4,7 +4,7 @@ using OrakUtilDotNetCore.FiOrm;
 
 namespace OrakUtilSqliteCore.FiDbHelper
 {
-  //using OrakYazilimLib.AdoNetHelper;
+  //using OrakUtilDotNetFrm.AdoNetHelper;
   using System;
   using System.Collections.Generic;
   using System.Data;
