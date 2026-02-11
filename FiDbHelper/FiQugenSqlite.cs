@@ -39,17 +39,17 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
           sbFields.Append(",");
         }
         //if (fiCol.ofcTxTxSqlFieldDefinition() == null) {
-        sbFields.Append(fiCol.ofcTxFieldName) // DbFieldName alınmalı
+        sbFields.Append(fiCol.fcTxFieldName) // DbFieldName alınmalı
           .Append(" ")
-          .Append(ConvertColTypeToDbType(fiCol.ofcTxFieldType))
+          .Append(ConvertColTypeToDbType(fiCol.fcTxFieldType))
           .Append(GetLengthDef(fiCol));
 
-        if (FiString.OrEmpty(fiCol.ofcTxIdType).Equals("identity"))
+        if (FiString.OrEmpty(fiCol.fcTxIdType).Equals("identity"))
         {
           sbFields.Append(" PRIMARY KEY AUTOINCREMENT");
         }
 
-        if (FiString.OrEmpty(fiCol.ofcTxIdType).Equals("user-assign"))
+        if (FiString.OrEmpty(fiCol.fcTxIdType).Equals("user-assign"))
         {
           sbFields.Append(" PRIMARY KEY");
         }
@@ -101,16 +101,16 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
 
     private static string GetLengthDef(FiCol fiCol)
     {
-      string generalType = FiString.OrEmpty(ConvertColTypeToGeneralType(fiCol.ofcTxFieldType));
+      string generalType = FiString.OrEmpty(ConvertColTypeToGeneralType(fiCol.fcTxFieldType));
 
-      if (generalType.Equals("TEXT") && fiCol.ofcLnLength != null)
+      if (generalType.Equals("TEXT") && fiCol.fcLnLength != null)
       {
-        return $"({fiCol.ofcLnLength})";
+        return $"({fiCol.fcLnLength})";
       }
 
-      if (generalType.Equals("DECIMAL") && fiCol.ofcLnPrecision != null)
+      if (generalType.Equals("DECIMAL") && fiCol.fcLnPrecision != null)
       {
-        return $"({fiCol.ofcLnPrecision},{FiNumber.OrIntZero(fiCol.ofcLnScale)})";
+        return $"({fiCol.fcLnPrecision},{FiNumber.OrIntZero(fiCol.fcLnScale)})";
       }
 
       return "";
@@ -142,10 +142,10 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
           {
 
             if (indexFields != 1) queryFields.Append(", ");
-            queryFields.Append(fiCol.ofcTxFieldName);
+            queryFields.Append(fiCol.fcTxFieldName);
 
             if (indexParams != 1) queryParams.Append(", ");
-            queryParams.Append("@").Append(fiCol.ofcTxFieldName);
+            queryParams.Append("@").Append(fiCol.fcTxFieldName);
 
             indexFields++;
             indexParams++;
@@ -156,10 +156,10 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
         {
 
           if (indexFields != 1) queryFields.Append(", ");
-          queryFields.Append(fiCol.ofcTxFieldName);
+          queryFields.Append(fiCol.fcTxFieldName);
 
           if (indexParams != 1) queryParams.Append(", ");
-          queryParams.Append("@").Append(fiCol.ofcTxFieldName);
+          queryParams.Append("@").Append(fiCol.fcTxFieldName);
 
           indexFields++;
           indexParams++;
@@ -196,17 +196,17 @@ WHERE {{txWhere}} ";
         if (fiCol.CheckFiColIfIdentityPrimaryKey())
         {
           if (indexWhere != 1) sbWhereFields.Append(", ");
-          sbWhereFields.Append(fiCol.ofcTxFieldName)
-            .Append("= @").Append(fiCol.ofcTxFieldName);
+          sbWhereFields.Append(fiCol.fcTxFieldName)
+            .Append("= @").Append(fiCol.fcTxFieldName);
           indexWhere++;
           continue;
         }
 
         if (indexUpFields != 1) queryFields.Append(", ");
 
-        queryFields.Append(fiCol.ofcTxFieldName)
+        queryFields.Append(fiCol.fcTxFieldName)
           .Append("= @")
-          .Append(fiCol.ofcTxFieldName);
+          .Append(fiCol.fcTxFieldName);
 
         indexUpFields++;
       }
@@ -260,7 +260,7 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
         {
           if (indexForPriKey != 1) sbTxWhere.Append(", ");
           sbTxWhere.Append(fiCol.GetTxDbFieldOrTxFieldName());
-          sbTxWhere.Append(" = @").Append(fiCol.ofcTxFieldName);
+          sbTxWhere.Append(" = @").Append(fiCol.fcTxFieldName);
           indexForPriKey++;
           continue;
         }
