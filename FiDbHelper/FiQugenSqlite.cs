@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
         index++;
       }
 
-      FiKeybean fkbParams = new FiKeybean();
+      Fkb fkbParams = new Fkb();
       fkbParams.Add("tableName", ifiTbl.GetITxTableName());
       fkbParams.Add("tableFields", sbFields.ToString());
 
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
 
       }
 
-      FiKeybean fkbTemplate = new FiKeybean();
+      Fkb fkbTemplate = new Fkb();
       fkbTemplate.Add("tableName", iFiTableMeta.GetITxTableName());
       fkbTemplate.Add("csvFields", queryFields.ToString());
       fkbTemplate.Add("paramFields", queryParams.ToString());
@@ -211,7 +211,7 @@ WHERE {{txWhere}} ";
         indexUpFields++;
       }
 
-      FiKeybean fkbTemplate = new FiKeybean();
+      Fkb fkbTemplate = new Fkb();
       fkbTemplate.Add("tableName", fiQuery.fiTableMeta.GetITxTableName());
       fkbTemplate.Add("csvFields", queryFields.ToString());
       fkbTemplate.Add("txWhere", sbWhereFields.ToString());
@@ -228,7 +228,7 @@ SELECT *
 FROM {FicOksCoding.OkTableName().fnmTemplate()}
 "; //
 
-      FiKeybean fkbParams = new FiKeybean();
+      Fkb fkbParams = new Fkb();
       fkbParams.AddField(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
 
       string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
@@ -275,7 +275,7 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
         return fdrMain;
       }
 
-      FiKeybean fkbTemplate = new FiKeybean();
+      Fkb fkbTemplate = new Fkb();
       fkbTemplate.AddField(FicOksCoding.OkTableName(), iFiTableMeta.GetITxTableName());
       fkbTemplate.AddField(FicOksCoding.OkTxWhere(), sbTxWhere.ToString());
 

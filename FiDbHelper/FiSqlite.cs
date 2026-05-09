@@ -120,7 +120,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
 
     }
 
-    public Fdr SqlSelectQuery(string query, FiKeybean fkbParams)
+    public Fdr SqlSelectQuery(string query, Fkb fkbParams)
     {
       FiQuery fiQuery = new FiQuery(query, fkbParams);
       return SqlSelectQuery(fiQuery);
@@ -159,7 +159,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
       }
 
     }
-    private void AddSqlParametersToComm(FiKeybean fkbParams, SQLiteCommand comm)
+    private void AddSqlParametersToComm(Fkb fkbParams, SQLiteCommand comm)
     {
 
       if (fkbParams != null && fkbParams.Count > 0)
@@ -169,7 +169,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
 
     }
 
-    public static SQLiteParameter[] GetArrSqlParams(FiKeybean fkbParams)
+    public static SQLiteParameter[] GetArrSqlParams(Fkb fkbParams)
     {
       if (fkbParams == null) return new List<SQLiteParameter>().ToArray();
 
