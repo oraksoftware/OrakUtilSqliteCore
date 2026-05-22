@@ -53,13 +53,13 @@ namespace OrakUtilSqliteCore.FiDbHelper
     /**
      * Required Fields: FiTableMeta
      */
-    protected Fdr AbsSelectAll1(FiQuery fiQuery)
+    protected Fdr AbsSelectAllDtb1(FiQuery fiQuery)
     {
       string sql = FiQugenSqlite.SelectAll1(fiQuery.fiTableMeta);
       //FiAppConfig.fiLog?.Debug("Query:"+ sql);
       fiQuery.sql = sql;
 
-      return GetDbHelper().SqlSelectQuery(fiQuery);
+      return GetDbHelper().SqlSelectQueryAsDtb(fiQuery);
     }
     protected Fdr AbsDeleteById1(FiQuery fiQuery)
     {

@@ -120,13 +120,13 @@ namespace OrakUtilSqliteCore.FiDbHelper
 
     }
 
-    public Fdr SqlSelectQuery(string query, Fkb fkbParams)
+    public Fdr SqlSelectQueryAsDtb(string query, Fkb fkbParams)
     {
       FiQuery fiQuery = new FiQuery(query, fkbParams);
-      return SqlSelectQuery(fiQuery);
+      return SqlSelectQueryAsDtb(fiQuery);
     }
 
-    public Fdr SqlSelectQuery(FiQuery fiQuery)
+    public Fdr SqlSelectQueryAsDtb(FiQuery fiQuery)
     {
       Fdr fdrDtb = new Fdr();
 
