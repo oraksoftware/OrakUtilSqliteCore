@@ -270,7 +270,7 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
       // Where cümleciği gelmemişse
       if (FiString.IsEmpty(sbTxWhere.ToString()))
       {
-        fdrMain.boResult = false;
+        fdrMain.fdBoResult = false;
         fdrMain.refValue = "no-where condition-query cleared";
         return fdrMain;
       }
@@ -279,7 +279,7 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
       fkbTemplate.AddField(FicOksCoding.OkTableName(), iFiTableMeta.GetITxTableName());
       fkbTemplate.AddField(FicOksCoding.OkTxWhere(), sbTxWhere.ToString());
 
-      fdrMain.boResult = true;
+      fdrMain.fdBoResult = true;
       fdrMain.refValue = FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
 
       return fdrMain;

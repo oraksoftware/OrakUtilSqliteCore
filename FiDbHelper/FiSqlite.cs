@@ -49,7 +49,7 @@ public class FiSqLite
         return fdrMain;
       }
       // Execution yapılmadı
-      fdrMain.boResult = true;
+      fdrMain.fdBoResult = true;
       fdrMain.txMessage = "Veritabanı Mevcut.";
       FiAppConfig.fiLog?.Debug($"Veritabanı mevcut");
       return fdrMain;
@@ -142,15 +142,15 @@ public class FiSqLite
       DataTable dt = new DataTable();
       da.Fill(dt);
 
-      fdrMain.boResult = true;
+      fdrMain.fdBoResult = true;
       //fdrDtb.refValue = dt;
-      fdrMain.refDtbVal = dt;
+      fdrMain.fdDtbVal = dt;
       return fdrMain;
     }
     catch (Exception e)
     {
       FiAppConfig.fiLog?.Error(e.Message);
-      fdrMain.boResult = false;
+      fdrMain.fdBoResult = false;
       return fdrMain;
     }
 
