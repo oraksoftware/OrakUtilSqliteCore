@@ -13,7 +13,7 @@ public class FiSqLite
 
   public static FiSqLite BuiWitProfile(string connProfile)
   {
-    string prTxConnString = FiAppConfig.GetConnStringWthTest(connProfile);
+    string prTxConnString = FiAppConfig.GetConnStringWitTest(connProfile);
     return new FiSqLite(prTxConnString);
   }
 
