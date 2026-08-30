@@ -229,7 +229,7 @@ FROM {FicOksCoding.OkTableName().fnmTemplate()}
 "; //
 
       Fkb fkbParams = new Fkb();
-      fkbParams.AddField(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
+      fkbParams.AddFic(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
 
       string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
 
@@ -276,8 +276,8 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
       }
 
       Fkb fkbTemplate = new Fkb();
-      fkbTemplate.AddField(FicOksCoding.OkTableName(), iFiTableMeta.GetITxTableName());
-      fkbTemplate.AddField(FicOksCoding.OkTxWhere(), sbTxWhere.ToString());
+      fkbTemplate.AddFic(FicOksCoding.OkTableName(), iFiTableMeta.GetITxTableName());
+      fkbTemplate.AddFic(FicOksCoding.OkTxWhere(), sbTxWhere.ToString());
 
       fdrMain.fdBoResult = true;
       fdrMain.refValue = FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
