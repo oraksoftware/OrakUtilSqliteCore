@@ -1,4 +1,6 @@
-﻿using OrakUtilDotNetCore.FiContainer;
+﻿using OrakUtilDotNetCore.FiCollections;
+using OrakUtilDotNetCore.FiContainer;
+using OrakUtilDotNetCore.FiDataContainer;
 using OrakUtilDotNetCore.FiOrm;
 
 namespace OrakUtilSqliteCore.FiDbHelper
@@ -9,6 +11,10 @@ namespace OrakUtilSqliteCore.FiDbHelper
   {
     public string connProfile { get; set; }
     protected IFiTableMeta fiTableMeta { get; set; }
+
+    protected Fkf fkfAll { get; set; }
+
+    protected FiCol? qcfTxSqTableName { get; set; }
 
     public AbsRepoSqlite()
     {
@@ -31,7 +37,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
       // TODO metod yaz
     }
 
-    public Fdr AbsInsert1(FiQuery fiQuery)
+    public Fdr AbsInsertV1(FiQuery fiQuery)
     {
       fiQuery.fiTableMeta ??= fiTableMeta;
       string sql = FiQugenSqlite.InsertFiCols(fiQuery.fiTableMeta, fiQuery.ficListCol, fiQuery.boInsertFieldsOnly);
@@ -40,6 +46,23 @@ namespace OrakUtilSqliteCore.FiDbHelper
 
       return GetDbHelper().SqlInsertQuery(fiQuery);
     }
+
+    public Fdr AbsInsertV2(FiQuery fiQuery)
+    {
+      FicList ficList = fiQuery.ficListCol;
+
+      if (qcfTxSqTableName !=null)
+      {
+        ficList.Add(qcfTxSqTableName);
+      }
+
+      Fdr fdrSql = FiQugenSqlite.InsertFicListV2(fiQuery.ficListCol);
+      //FiAppConfig.fiLog?.Debug("Query:"+ sql);
+      //fiQuery.sql = fdrSql.get;
+
+      return GetDbHelper().SqlInsertQuery(fiQuery);
+    }
+
     public Fdr AbsUpdateByIdentKey(FiQuery fiQuery)
     {
       fiQuery.fiTableMeta ??= fiTableMeta;
@@ -51,16 +74,34 @@ namespace OrakUtilSqliteCore.FiDbHelper
     }
 
     /**
-     * Required Fields: FiTableMeta
+     * Required Fields: FiTableMeta (Ftm)
+     *
+     * @return Fdr fdDtbVal
      */
-    protected Fdr AbsSelectAllDtb1(FiQuery fiQuery)
+    protected Fdr AbsSelectAllByFtm(FiQuery fiQuery)
     {
-      string sql = FiQugenSqlite.SelectAll1(fiQuery.fiTableMeta);
+      //string sql = FiQugenSqlite.SelectAllV2();
       //FiAppConfig.fiLog?.Debug("Query:"+ sql);
-      fiQuery.sql = sql;
+      //fiQuery.sql = sql;
+
 
       return GetDbHelper().SqlSelectQueryAsDtb(fiQuery);
     }
+
+    /**
+     * Required Fields: FfkAll (parent)
+     *
+     * @return Fdr fdDtbVal
+     */
+    protected Fdr AbsSelectAllV2()
+    {
+      //string sql = FiQugenSqlite.SelectAll1(this.fkfAll());
+      //FiAppConfig.fiLog?.Debug("Query:"+ sql);
+      //fiQuery.sql = sql;
+
+      return null; // GetDbHelper().SqlSelectQueryAsDtb(fiQuery);
+    }
+
     protected Fdr AbsDeleteById1(FiQuery fiQuery)
     {
       if (fiQuery.fiTableMeta == null) fiQuery.fiTableMeta = fiTableMeta;

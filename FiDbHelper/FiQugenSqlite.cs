@@ -176,6 +176,68 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     }
 
 
+    public static String InsertFics(List<FiCol> listFields, bool? boInsertFieldsOnly)
+    {
+
+      FimFtSql.SfTableName();
+      FimFtSql.SfTxFields();
+      FimFtSql.SfTxFieldsVar();
+
+      String template = "INSERT INTO {{sfTableName}} ( {{sfTxFields}} ) \n"
+        + " VALUES ( {{sfTxFieldsVar}} )";
+
+      StringBuilder queryFields = new StringBuilder();
+      StringBuilder queryParams = new StringBuilder();
+
+      int indexFields = 1;
+      int indexParams = 1;
+
+      foreach (FiCol fiCol in listFields)
+      {
+
+        if (fiCol.CheckFiColIfPrimaryKey()) continue;
+
+        if (FiBool.IsTrue(boInsertFieldsOnly))
+        {
+
+          if (FiBool.IsTrue(fiCol.boInsertCol))
+          {
+
+            if (indexFields != 1) queryFields.Append(", ");
+            queryFields.Append(fiCol.fcTxFieldName);
+
+            if (indexParams != 1) queryParams.Append(", ");
+            queryParams.Append("@").Append(fiCol.fcTxFieldName);
+
+            indexFields++;
+            indexParams++;
+          }
+
+        }
+        else
+        {
+
+          if (indexFields != 1) queryFields.Append(", ");
+          queryFields.Append(fiCol.fcTxFieldName);
+
+          if (indexParams != 1) queryParams.Append(", ");
+          queryParams.Append("@").Append(fiCol.fcTxFieldName);
+
+          indexFields++;
+          indexParams++;
+        }
+
+      }
+
+      Fkb fkbTemplate = new Fkb();
+      fkbTemplate.AddFim(FimFtSql.SfTableName(), "");
+      fkbTemplate.AddFim(FimFtSql.SfTxFields(), queryFields.ToString());
+      fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), queryParams.ToString());
+
+      return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+    }
+
+
     public static String UpdateFiColsByIdentKey(FiQuery fiQuery)
     {
       //if(1==1) return "test";
@@ -239,6 +301,26 @@ FROM {FicOksCoding.OkTableName().fnmTemplate()}
     }
 
 
+    public static string SelectAllV2(Fkf fkfAll)
+    {
+      string txTableName = fkfAll.GetFimHeaderNtn(FimFtSpecFields.QcfTxSqTableName());
+
+      // tpl:template
+      string txQueryTpl = $@"
+SELECT * 
+FROM {txTableName}
+"; //
+
+      Fkb fkbParams = new Fkb();
+      //fkbParams.AddFic(FicOksCoding.OkTableName(), fiTbl.GetITxTableName());
+
+      string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
+
+      FiAppConfig.fiLog?.Debug(query);
+
+      return query;
+    }
+
     public static Fdr DeleteWhereIdCols(IFiTableMeta iFiTableMeta)
     {
       Fdr fdrMain = new Fdr();
@@ -290,6 +372,14 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
 
 
 
+    public static Fdr InsertFicListV2(FicList fiQueryFicListCol)
+    {
+      Fdr fdrMain = new Fdr();
+
+
+
+      return fdrMain;
+    }
   } // end class
 
 }
