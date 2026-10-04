@@ -7,18 +7,34 @@ namespace OrakUtilSqliteCore.FiDbHelper
 {
 
 
-  public class AbsRepoSqlite : IRepoSqLite
+  public abstract class AbsRepoSqlite : IRepoSqLite
   {
     public string connProfile { get; set; }
-    protected IFiTableMeta fiTableMeta { get; set; }
 
-    protected Fkf fkfAll { get; set; }
+    //protected IFiTableMeta fiTableMeta { get; set; }
 
-    protected FiCol? qcfTxSqTableName { get; set; }
+    // protected Fkf fkfAll { get; set; }
+
+    // protected FiCol? qcfTxSqTableName { get; set; }
 
     public AbsRepoSqlite()
     {
 
+    }
+
+    public virtual Fkf GetFkfAll()
+    {
+      return new Fkf();
+    }
+
+    public virtual FicList GetFclDto()
+    {
+      return new FicList();
+    }
+
+    public virtual FiCol? GetQcfTxSqTableName()
+    {
+      return null;
     }
 
     protected AbsRepoSqlite(string connProfile)
@@ -37,23 +53,23 @@ namespace OrakUtilSqliteCore.FiDbHelper
       // TODO metod yaz
     }
 
-    public Fdr AbsInsertV1(FiQuery fiQuery)
-    {
-      fiQuery.fiTableMeta ??= fiTableMeta;
-      string sql = FiQugenSqlite.InsertFiCols(fiQuery.fiTableMeta, fiQuery.ficListCol, fiQuery.boInsertFieldsOnly);
-      //FiAppConfig.fiLog?.Debug("Query:"+ sql);
-      fiQuery.sql = sql;
-
-      return GetDbHelper().SqlInsertQuery(fiQuery);
-    }
+    // public Fdr AbsInsertV1(FiQuery fiQuery)
+    // {
+    //   fiQuery.fiTableMeta ??= fiTableMeta;
+    //   string sql = FiQugenSqlite.InsertFiCols(fiQuery.fiTableMeta, fiQuery.ficListCol, fiQuery.boInsertFieldsOnly);
+    //   //FiAppConfig.fiLog?.Debug("Query:"+ sql);
+    //   fiQuery.sql = sql;
+    //
+    //   return GetDbHelper().SqlInsertQuery(fiQuery);
+    // }
 
     public Fdr AbsInsertV2(FiQuery fiQuery)
     {
-      FicList ficList = fiQuery.ficListCol;
+      FicList ficList = fiQuery.GetFicListColNtn();
 
-      if (qcfTxSqTableName !=null)
+      if (GetQcfTxSqTableName() !=null)
       {
-        ficList.Add(qcfTxSqTableName);
+        ficList.Add(GetQcfTxSqTableName());
       }
 
       Fdr fdrSql = FiQugenSqlite.InsertFicListV2(fiQuery.ficListCol);
@@ -63,15 +79,15 @@ namespace OrakUtilSqliteCore.FiDbHelper
       return GetDbHelper().SqlInsertQuery(fiQuery);
     }
 
-    public Fdr AbsUpdateByIdentKey(FiQuery fiQuery)
-    {
-      fiQuery.fiTableMeta ??= fiTableMeta;
-      string sql = FiQugenSqlite.UpdateFiColsByIdentKey(fiQuery);
-      //FiAppConfig.fiLog?.Debug("Query:"+ sql);
-      fiQuery.sql = sql;
-
-      return GetDbHelper().SqlInsertQuery(fiQuery);
-    }
+    // public Fdr AbsUpdateByIdentKey(FiQuery fiQuery)
+    // {
+    //   fiQuery.fiTableMeta ??= fiTableMeta;
+    //   string sql = FiQugenSqlite.UpdateFiColsByIdentKey(fiQuery);
+    //   //FiAppConfig.fiLog?.Debug("Query:"+ sql);
+    //   fiQuery.sql = sql;
+    //
+    //   return GetDbHelper().SqlInsertQuery(fiQuery);
+    // }
 
     /**
      * Required Fields: FiTableMeta (Ftm)
@@ -104,9 +120,9 @@ namespace OrakUtilSqliteCore.FiDbHelper
 
     protected Fdr AbsDeleteById1(FiQuery fiQuery)
     {
-      if (fiQuery.fiTableMeta == null) fiQuery.fiTableMeta = fiTableMeta;
+      //if (fiQuery.fiTableMeta == null) fiQuery.fiTableMeta = fiTableMeta;
 
-      var fdrSql = FiQugenSqlite.DeleteWhereIdCols(fiQuery.fiTableMeta);
+      var fdrSql = FiQugenSqlite.DeleteWhereIdCols(fiQuery.fkfAll);
       // MEDFIX burada fdrSql kontrolü eklenmeli
       fiQuery.sql = fdrSql.refValue?.ToString() ?? "";
 

@@ -14,7 +14,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
 
   public class FiQugenSqlite
   {
-    public static string CreateTable(IFiTableMeta ifiTbl)
+    public static string CreateTable(Fkf fkfAll)
     {
       string tempQuery = @"
 CREATE TABLE IF NOT EXISTS {{tableName}} (
@@ -29,11 +29,18 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
 
       StringBuilder sbFields = new StringBuilder();
 
-      FicList ficList = ifiTbl.GenITableCols();
+      //FicList ficList = ifiTbl.GenITableCols();
 
       int index = 0;
-      foreach (FiCol fiCol in ficList)
+      foreach (KeyValuePair<string, FiCol> keyValuePair in fkfAll)
       {
+        FiCol fiCol = keyValuePair.Value;
+
+        if(FiBool.IsTrue(fiCol.fcBoTransient))
+        {
+          continue;
+        }
+
         if (index > 0)
         {
           sbFields.Append(",");
@@ -58,8 +65,15 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
         index++;
       }
 
+      fkfAll.TryGetValue(FimFtSpecFields.QcfTxSqTableName().ftTxKey, out FiCol? qcfTxSqTableName);
+
+      if(qcfTxSqTableName == null)
+      {
+        return "-- table name not found";
+      }
+
       Fkb fkbParams = new Fkb();
-      fkbParams.Add("tableName", ifiTbl.GetITxTableName());
+      fkbParams.Add("tableName", qcfTxSqTableName.fcTxHeader);
       fkbParams.Add("tableFields", sbFields.ToString());
 
       string createQuery = FiTemplate.ReplaceTemplateParameters(tempQuery, fkbParams);
@@ -180,7 +194,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     {
 
       FimFtSql.SfTableName();
-      FimFtSql.SfTxFields();
+      FimFtSql.SfFields();
       FimFtSql.SfTxFieldsVar();
 
       String template = "INSERT INTO {{sfTableName}} ( {{sfTxFields}} ) \n"
@@ -231,7 +245,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
 
       Fkb fkbTemplate = new Fkb();
       fkbTemplate.AddFim(FimFtSql.SfTableName(), "");
-      fkbTemplate.AddFim(FimFtSql.SfTxFields(), queryFields.ToString());
+      fkbTemplate.AddFim(FimFtSql.SfFields(), queryFields.ToString());
       fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), queryParams.ToString());
 
       return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
@@ -321,28 +335,28 @@ FROM {txTableName}
       return query;
     }
 
-    public static Fdr DeleteWhereIdCols(IFiTableMeta iFiTableMeta)
+    public static Fdr DeleteWhereIdCols(Fkf? fkfAll)
     {
       Fdr fdrMain = new Fdr();
 
-      if (iFiTableMeta == null) return fdrMain;
+      if (fkfAll == null) return fdrMain;
 
       String template = $@"
-DELETE FROM {FicOksCoding.OkTableName().fnmTemplate()}
-WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
+DELETE FROM  {FimFtSql.SfTableName().getTempVar()}
+WHERE {FimFtSql.SfWhere().getTempVar()}
 ".Trim();
 
       StringBuilder sbTxWhere = new StringBuilder();
 
       int indexForPriKey = 1;
-      foreach (FiCol fiCol in iFiTableMeta.GenITableCols())
+      foreach (KeyValuePair<string, FiCol> fiCol in fkfAll)
       {
 
-        if (fiCol.CheckFiColIfPrimaryKey())
+        if (fiCol.Value.CheckFiColIfPrimaryKey())
         {
           if (indexForPriKey != 1) sbTxWhere.Append(", ");
-          sbTxWhere.Append(fiCol.GetTxDbFieldOrTxFieldName());
-          sbTxWhere.Append(" = @").Append(fiCol.fcTxFieldName);
+          sbTxWhere.Append(fiCol.Value.GetTxDbFieldOrTxFieldName());
+          sbTxWhere.Append(" = @").Append(fiCol.Value.fcTxFieldName);
           indexForPriKey++;
           continue;
         }
@@ -353,13 +367,23 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
       if (FiString.IsEmpty(sbTxWhere.ToString()))
       {
         fdrMain.fdBoResult = false;
-        fdrMain.refValue = "no-where condition-query cleared";
+        fdrMain.refValue = "error:no-where condition";
         return fdrMain;
       }
 
+      string tableName = fkfAll.GetTableName();
+      if (FiString.IsEmpty(tableName))
+      {
+        fdrMain.fdBoResult = false;
+        fdrMain.refValue = "error:no-table-name";
+        return fdrMain;
+      }
+
+
       Fkb fkbTemplate = new Fkb();
-      fkbTemplate.AddFic(FicOksCoding.OkTableName(), iFiTableMeta.GetITxTableName());
-      fkbTemplate.AddFic(FicOksCoding.OkTxWhere(), sbTxWhere.ToString());
+
+      fkbTemplate.AddFim(FimFtSql.SfTableName(), tableName);
+      fkbTemplate.AddFim(FimFtSql.SfWhere(), sbTxWhere.ToString());
 
       fdrMain.fdBoResult = true;
       fdrMain.refValue = FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
@@ -372,7 +396,7 @@ WHERE {FicOksCoding.OkTxWhere().fnmTemplate()}
 
 
 
-    public static Fdr InsertFicListV2(FicList fiQueryFicListCol)
+    public static Fdr InsertFicListV2(FicList ficList)
     {
       Fdr fdrMain = new Fdr();
 
