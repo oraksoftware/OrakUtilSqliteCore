@@ -1,5 +1,4 @@
 ﻿using OrakUtilDotNetCore.FiContainer;
-using OrakUtilDotNetCore.FiDataContainer;
 using OrakUtilDotNetCore.FiOrm;
 
 namespace OrakUtilSqliteCore.FiDbHelper

@@ -1,7 +1,6 @@
 ﻿using OrakUtilDotNetCore.FiConfig;
 using OrakUtilDotNetCore.FiContainer;
 using OrakUtilDotNetCore.FiCore;
-using OrakUtilDotNetCore.FiDataContainer;
 using OrakUtilDotNetCore.FiMetas;
 using OrakUtilDotNetCore.FiOrm;
 
