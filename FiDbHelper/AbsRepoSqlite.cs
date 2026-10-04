@@ -61,18 +61,19 @@ namespace OrakUtilSqliteCore.FiDbHelper
     //   return GetDbHelper().SqlInsertQuery(fiQuery);
     // }
 
-    public Fdr AbsInsertV2(FiQuery fiQuery)
+    /**
+     * Repo tanımındaki GetFkfAll metodu ile sorgu oluşturur.
+     */
+    public Fdr FiInsertV2(Fkb fkbEntity)
     {
-      FicList ficList = fiQuery.GetFicListColNtn();
+      //fiQuery.fkfAll = GetFkfAll();
+      FiQuery fiQuery = new FiQuery();
+      fiQuery.fkfAll = GetFkfAll();
+      fiQuery.fkbParams = fkbEntity;
 
-      if (GetQcfTxSqTableName() !=null)
-      {
-        ficList.Add(GetQcfTxSqTableName());
-      }
+      Fdr fdrSql = FiQugenSqlite.InsertV1(fiQuery);
 
-      Fdr fdrSql = FiQugenSqlite.InsertFicListV2(fiQuery.ficListCol);
-      //FiAppConfig.fiLog?.Debug("Query:"+ sql);
-      //fiQuery.sql = fdrSql.get;
+      if(!fdrSql.IsTrueBoResult()) return fdrSql;
 
       return GetDbHelper().SqlInsertQuery(fiQuery);
     }

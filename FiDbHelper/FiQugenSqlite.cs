@@ -4,167 +4,152 @@ using OrakUtilDotNetCore.FiCore;
 using OrakUtilDotNetCore.FiMetas;
 using OrakUtilDotNetCore.FiOrm;
 
-namespace OrakUtilSqliteCore.FiDbHelper
-{
-  using System;
-  using System.Collections.Generic;
-  using System.Text;
+namespace OrakUtilSqliteCore.FiDbHelper;
 
-  public class FiQugenSqlite
+using System;
+using System.Collections.Generic;
+using System.Text;
+public class FiQugenSqlite
+{
+  public static string CreateTable(Fkf fkfAll)
   {
-    public static string CreateTable(Fkf fkfAll)
-    {
-      string tempQuery = @"
+    string tempQuery = @"
 CREATE TABLE IF NOT EXISTS {{tableName}} (
 {{tableFields}} 
 );  
 ";
 
-      //CREATE TABLE ornek (
-      // id INTEGER PRIMARY KEY,
-      // ad TEXT
-      // );
+    //CREATE TABLE ornek (
+    // id INTEGER PRIMARY KEY,
+    // ad TEXT
+    // );
 
-      StringBuilder sbFields = new StringBuilder();
+    StringBuilder sbFields = new StringBuilder();
 
-      //FicList ficList = ifiTbl.GenITableCols();
+    //FicList ficList = ifiTbl.GenITableCols();
 
-      int index = 0;
-      foreach (KeyValuePair<string, FiCol> keyValuePair in fkfAll)
+    int index = 0;
+    foreach (KeyValuePair<string, FiCol> keyValuePair in fkfAll)
+    {
+      FiCol fiCol = keyValuePair.Value;
+
+      if (FiBool.IsTrue(fiCol.fcBoTransient))
       {
-        FiCol fiCol = keyValuePair.Value;
-
-        if(FiBool.IsTrue(fiCol.fcBoTransient))
-        {
-          continue;
-        }
-
-        if (index > 0)
-        {
-          sbFields.Append(",");
-        }
-        //if (fiCol.ofcTxTxSqlFieldDefinition() == null) {
-        sbFields.Append(fiCol.fcTxFieldName) // DbFieldName alınmalı
-          .Append(" ")
-          .Append(ConvertColTypeToDbType(fiCol.fcTxFieldType))
-          .Append(GetLengthDef(fiCol));
-
-        if (FiString.OrEmpty(fiCol.fcTxIdType).Equals("identity"))
-        {
-          sbFields.Append(" PRIMARY KEY AUTOINCREMENT");
-        }
-
-        if (FiString.OrEmpty(fiCol.fcTxIdType).Equals("user-assign"))
-        {
-          sbFields.Append(" PRIMARY KEY");
-        }
-
-        sbFields.Append("\n");
-        index++;
+        continue;
       }
 
-      fkfAll.TryGetValue(FimFtSpecFields.QcfTxSqTableName().ftTxKey, out FiCol? qcfTxSqTableName);
-
-      if(qcfTxSqTableName == null)
+      if (index > 0)
       {
-        return "-- table name not found";
+        sbFields.Append(",");
+      }
+      //if (fiCol.ofcTxTxSqlFieldDefinition() == null) {
+      sbFields.Append(fiCol.fcTxFieldName) // DbFieldName alınmalı
+        .Append(" ")
+        .Append(ConvertColTypeToDbType(fiCol.fcTxFieldType))
+        .Append(GetLengthDef(fiCol));
+
+      if (FiString.OrEmpty(fiCol.fcTxIdType).Equals("identity"))
+      {
+        sbFields.Append(" PRIMARY KEY AUTOINCREMENT");
       }
 
-      Fkb fkbParams = new Fkb();
-      fkbParams.Add("tableName", qcfTxSqTableName.fcTxHeader);
-      fkbParams.Add("tableFields", sbFields.ToString());
-
-      string createQuery = FiTemplate.ReplaceTemplateParameters(tempQuery, fkbParams);
-
-      return createQuery;
-    }
-
-    private static string ConvertColTypeToDbType(string ofcTxColType)
-    {
-      if (ofcTxColType == null) return "-- null type";
-      if (ofcTxColType.Equals("tint", StringComparison.InvariantCultureIgnoreCase)) return "TINYINT";
-      if (ofcTxColType.Equals("int", StringComparison.InvariantCultureIgnoreCase)) return "INTEGER";
-
-      return ofcTxColType;
-    }
-
-    /**
-     * Alanın genel tipini verir int,text,decimal gibi
-     */
-    private static string ConvertColTypeToGeneralType(string ofcTxColType)
-    {
-      if (ofcTxColType == null) return "";
-
-      if (ofcTxColType.Equals("tint", StringComparison.InvariantCultureIgnoreCase)
-        || ofcTxColType.Equals("int", StringComparison.InvariantCultureIgnoreCase)
-      ) return "INTEGER";
-
-      if (ofcTxColType.Equals("nvarchar", StringComparison.InvariantCultureIgnoreCase)
-        || ofcTxColType.Equals("varchar", StringComparison.InvariantCultureIgnoreCase)
-      ) return "TEXT";
-
-      if (ofcTxColType.Equals("double", StringComparison.InvariantCultureIgnoreCase)
-        || ofcTxColType.Equals("float", StringComparison.InvariantCultureIgnoreCase)
-        || ofcTxColType.Equals("decimal", StringComparison.InvariantCultureIgnoreCase)
-      ) return "DECIMAL";
-
-      return ofcTxColType;
-    }
-
-    private static string GetLengthDef(FiCol fiCol)
-    {
-      string generalType = FiString.OrEmpty(ConvertColTypeToGeneralType(fiCol.fcTxFieldType));
-
-      if (generalType.Equals("TEXT") && fiCol.fcLnLength != null)
+      if (FiString.OrEmpty(fiCol.fcTxIdType).Equals("user-assign"))
       {
-        return $"({fiCol.fcLnLength})";
+        sbFields.Append(" PRIMARY KEY");
       }
 
-      if (generalType.Equals("DECIMAL") && fiCol.fcLnPrecision != null)
-      {
-        return $"({fiCol.fcLnPrecision},{FiNumber.OrIntZero(fiCol.fcLnScale)})";
-      }
-
-      return "";
+      sbFields.Append("\n");
+      index++;
     }
 
-    // insert
+    fkfAll.TryGetValue(FimFtSpecFields.QcfTxSqTableName().ftTxKey, out FiCol? qcfTxSqTableName);
 
-    public static String InsertFiCols(IFiTableMeta iFiTableMeta, List<FiCol> listFields, bool? boInserFieldsOnly)
+    if (qcfTxSqTableName == null)
+    {
+      return "-- table name not found";
+    }
+
+    Fkb fkbParams = new Fkb();
+    fkbParams.Add("tableName", qcfTxSqTableName.fcTxHeader);
+    fkbParams.Add("tableFields", sbFields.ToString());
+
+    string createQuery = FiTemplate.ReplaceTemplateParameters(tempQuery, fkbParams);
+
+    return createQuery;
+  }
+
+  private static string ConvertColTypeToDbType(string ofcTxColType)
+  {
+    if (ofcTxColType == null) return "-- null type";
+    if (ofcTxColType.Equals("tint", StringComparison.InvariantCultureIgnoreCase)) return "TINYINT";
+    if (ofcTxColType.Equals("int", StringComparison.InvariantCultureIgnoreCase)) return "INTEGER";
+
+    return ofcTxColType;
+  }
+
+  /**
+   * Alanın genel tipini verir int,text,decimal gibi
+   */
+  private static string ConvertColTypeToGeneralType(string ofcTxColType)
+  {
+    if (ofcTxColType == null) return "";
+
+    if (ofcTxColType.Equals("tint", StringComparison.InvariantCultureIgnoreCase)
+      || ofcTxColType.Equals("int", StringComparison.InvariantCultureIgnoreCase)
+    ) return "INTEGER";
+
+    if (ofcTxColType.Equals("nvarchar", StringComparison.InvariantCultureIgnoreCase)
+      || ofcTxColType.Equals("varchar", StringComparison.InvariantCultureIgnoreCase)
+    ) return "TEXT";
+
+    if (ofcTxColType.Equals("double", StringComparison.InvariantCultureIgnoreCase)
+      || ofcTxColType.Equals("float", StringComparison.InvariantCultureIgnoreCase)
+      || ofcTxColType.Equals("decimal", StringComparison.InvariantCultureIgnoreCase)
+    ) return "DECIMAL";
+
+    return ofcTxColType;
+  }
+
+  private static string GetLengthDef(FiCol fiCol)
+  {
+    string generalType = FiString.OrEmpty(ConvertColTypeToGeneralType(fiCol.fcTxFieldType));
+
+    if (generalType.Equals("TEXT") && fiCol.fcLnLength != null)
+    {
+      return $"({fiCol.fcLnLength})";
+    }
+
+    if (generalType.Equals("DECIMAL") && fiCol.fcLnPrecision != null)
+    {
+      return $"({fiCol.fcLnPrecision},{FiNumber.OrIntZero(fiCol.fcLnScale)})";
+    }
+
+    return "";
+  }
+
+  // insert
+
+  public static String InsertFiCols(IFiTableMeta iFiTableMeta, List<FiCol> listFields, bool? boInserFieldsOnly)
+  {
+
+    String template = "INSERT INTO {{tableName}} ( {{csvFields}} ) \n"
+      + " VALUES ( {{paramFields}} )";
+
+    StringBuilder queryFields = new StringBuilder();
+    StringBuilder queryParams = new StringBuilder();
+
+    int indexFields = 1;
+    int indexParams = 1;
+
+    foreach (FiCol fiCol in listFields)
     {
 
-      String template = "INSERT INTO {{tableName}} ( {{csvFields}} ) \n"
-        + " VALUES ( {{paramFields}} )";
+      if (fiCol.IsPrimaryKey()) continue;
 
-      StringBuilder queryFields = new StringBuilder();
-      StringBuilder queryParams = new StringBuilder();
-
-      int indexFields = 1;
-      int indexParams = 1;
-
-      foreach (FiCol fiCol in listFields)
+      if (FiBool.IsTrue(boInserFieldsOnly))
       {
 
-        if (fiCol.CheckFiColIfPrimaryKey()) continue;
-
-        if (FiBool.IsTrue(boInserFieldsOnly))
-        {
-
-          if (FiBool.IsTrue(fiCol.boInsertCol))
-          {
-
-            if (indexFields != 1) queryFields.Append(", ");
-            queryFields.Append(fiCol.fcTxFieldName);
-
-            if (indexParams != 1) queryParams.Append(", ");
-            queryParams.Append("@").Append(fiCol.fcTxFieldName);
-
-            indexFields++;
-            indexParams++;
-          }
-
-        }
-        else
+        if (FiBool.IsTrue(fiCol.boInsertCol))
         {
 
           if (indexFields != 1) queryFields.Append(", ");
@@ -178,55 +163,55 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
         }
 
       }
-
-      Fkb fkbTemplate = new Fkb();
-      fkbTemplate.Add("tableName", iFiTableMeta.GetITxTableName());
-      fkbTemplate.Add("csvFields", queryFields.ToString());
-      fkbTemplate.Add("paramFields", queryParams.ToString());
-
-      return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
-    }
-
-
-    public static String InsertFics(List<FiCol> listFields, bool? boInsertFieldsOnly)
-    {
-
-      FimFtSql.SfTableName();
-      FimFtSql.SfFields();
-      FimFtSql.SfTxFieldsVar();
-
-      String template = "INSERT INTO {{sfTableName}} ( {{sfTxFields}} ) \n"
-        + " VALUES ( {{sfTxFieldsVar}} )";
-
-      StringBuilder queryFields = new StringBuilder();
-      StringBuilder queryParams = new StringBuilder();
-
-      int indexFields = 1;
-      int indexParams = 1;
-
-      foreach (FiCol fiCol in listFields)
+      else
       {
 
-        if (fiCol.CheckFiColIfPrimaryKey()) continue;
+        if (indexFields != 1) queryFields.Append(", ");
+        queryFields.Append(fiCol.fcTxFieldName);
 
-        if (FiBool.IsTrue(boInsertFieldsOnly))
-        {
+        if (indexParams != 1) queryParams.Append(", ");
+        queryParams.Append("@").Append(fiCol.fcTxFieldName);
 
-          if (FiBool.IsTrue(fiCol.boInsertCol))
-          {
+        indexFields++;
+        indexParams++;
+      }
 
-            if (indexFields != 1) queryFields.Append(", ");
-            queryFields.Append(fiCol.fcTxFieldName);
+    }
 
-            if (indexParams != 1) queryParams.Append(", ");
-            queryParams.Append("@").Append(fiCol.fcTxFieldName);
+    Fkb fkbTemplate = new Fkb();
+    fkbTemplate.Add("tableName", iFiTableMeta.GetITxTableName());
+    fkbTemplate.Add("csvFields", queryFields.ToString());
+    fkbTemplate.Add("paramFields", queryParams.ToString());
 
-            indexFields++;
-            indexParams++;
-          }
+    return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+  }
 
-        }
-        else
+
+  public static String InsertFics(List<FiCol> listFields, bool? boInsertFieldsOnly)
+  {
+
+    FimFtSql.SfTableName();
+    FimFtSql.SfFields();
+    FimFtSql.SfTxFieldsVar();
+
+    String template = "INSERT INTO {{sfTableName}} ( {{sfTxFields}} ) \n"
+      + " VALUES ( {{sfTxFieldsVar}} )";
+
+    StringBuilder queryFields = new StringBuilder();
+    StringBuilder queryParams = new StringBuilder();
+
+    int indexFields = 1;
+    int indexParams = 1;
+
+    foreach (FiCol fiCol in listFields)
+    {
+
+      if (fiCol.IsPrimaryKey()) continue;
+
+      if (FiBool.IsTrue(boInsertFieldsOnly))
+      {
+
+        if (FiBool.IsTrue(fiCol.boInsertCol))
         {
 
           if (indexFields != 1) queryFields.Append(", ");
@@ -240,168 +225,242 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
         }
 
       }
+      else
+      {
 
-      Fkb fkbTemplate = new Fkb();
-      fkbTemplate.AddFim(FimFtSql.SfTableName(), "");
-      fkbTemplate.AddFim(FimFtSql.SfFields(), queryFields.ToString());
-      fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), queryParams.ToString());
+        if (indexFields != 1) queryFields.Append(", ");
+        queryFields.Append(fiCol.fcTxFieldName);
 
-      return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+        if (indexParams != 1) queryParams.Append(", ");
+        queryParams.Append("@").Append(fiCol.fcTxFieldName);
+
+        indexFields++;
+        indexParams++;
+      }
+
     }
 
+    Fkb fkbTemplate = new Fkb();
+    fkbTemplate.AddFim(FimFtSql.SfTableName(), "");
+    fkbTemplate.AddFim(FimFtSql.SfFields(), queryFields.ToString());
+    fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), queryParams.ToString());
 
-    public static String UpdateFiColsByIdentKey(FiQuery fiQuery)
-    {
-      //if(1==1) return "test";
-      String template = @"UPDATE {{tableName}} SET {{csvFields}}  
+    return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+  }
+
+
+  public static String UpdateFiColsByIdentKey(FiQuery fiQuery)
+  {
+    //if(1==1) return "test";
+    String template = @"UPDATE {{tableName}} SET {{csvFields}}  
 WHERE {{txWhere}} ";
 
-      StringBuilder queryFields = new StringBuilder();
-      StringBuilder sbWhereFields = new StringBuilder();
+    StringBuilder queryFields = new StringBuilder();
+    StringBuilder sbWhereFields = new StringBuilder();
 
-      int indexUpFields = 1;
-      int indexWhere = 1;
+    int indexUpFields = 1;
+    int indexWhere = 1;
 
-      foreach (FiCol fiCol in fiQuery.ficListCol)
+    foreach (FiCol fiCol in fiQuery.ficListCol)
+    {
+      //if (fiCol.CheckFiColIfPrimaryKey()) continue;
+      //if (FiBool.IsTrue(fiQuery.boUseUpdateFieldsOnly))
+
+      if (fiCol.CheckFiColIfIdentityPrimaryKey())
       {
-        //if (fiCol.CheckFiColIfPrimaryKey()) continue;
-        //if (FiBool.IsTrue(fiQuery.boUseUpdateFieldsOnly))
-
-        if (fiCol.CheckFiColIfIdentityPrimaryKey())
-        {
-          if (indexWhere != 1) sbWhereFields.Append(", ");
-          sbWhereFields.Append(fiCol.fcTxFieldName)
-            .Append("= @").Append(fiCol.fcTxFieldName);
-          indexWhere++;
-          continue;
-        }
-
-        if (indexUpFields != 1) queryFields.Append(", ");
-
-        queryFields.Append(fiCol.fcTxFieldName)
-          .Append("= @")
-          .Append(fiCol.fcTxFieldName);
-
-        indexUpFields++;
+        if (indexWhere != 1) sbWhereFields.Append(", ");
+        sbWhereFields.Append(fiCol.fcTxFieldName)
+          .Append("= @").Append(fiCol.fcTxFieldName);
+        indexWhere++;
+        continue;
       }
 
-      Fkb fkbTemplate = new Fkb();
-      fkbTemplate.Add("tableName", fiQuery.fiTableMeta.GetITxTableName());
-      fkbTemplate.Add("csvFields", queryFields.ToString());
-      fkbTemplate.Add("txWhere", sbWhereFields.ToString());
+      if (indexUpFields != 1) queryFields.Append(", ");
 
-      return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+      queryFields.Append(fiCol.fcTxFieldName)
+        .Append("= @")
+        .Append(fiCol.fcTxFieldName);
+
+      indexUpFields++;
     }
 
+    Fkb fkbTemplate = new Fkb();
+    fkbTemplate.Add("tableName", fiQuery.fiTableMeta.GetITxTableName());
+    fkbTemplate.Add("csvFields", queryFields.ToString());
+    fkbTemplate.Add("txWhere", sbWhereFields.ToString());
 
-    public static string SelectAll1(IFiTableMeta ifiTbl)
-    {
-      // tpl:template
-      string txQueryTpl = $@"
+    return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+  }
+
+
+  public static string SelectAll1(IFiTableMeta ifiTbl)
+  {
+    // tpl:template
+    string txQueryTpl = $@"
 SELECT * 
 FROM {FicOksCoding.OkTableName().fnmTemplate()}
 "; //
 
-      Fkb fkbParams = new Fkb();
-      fkbParams.AddFic(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
+    Fkb fkbParams = new Fkb();
+    fkbParams.AddFic(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
 
-      string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
+    string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
 
-      FiAppConfig.fiLog?.Debug(query);
+    FiAppConfig.fiLog?.Debug(query);
 
-      return query;
-    }
+    return query;
+  }
 
 
-    public static string SelectAllV2(Fkf fkfAll)
-    {
-      string txTableName = fkfAll.GetFimHeaderNtn(FimFtSpecFields.QcfTxSqTableName());
+  public static string SelectAllV2(Fkf fkfAll)
+  {
+    string txTableName = fkfAll.GetFimHeaderNtn(FimFtSpecFields.QcfTxSqTableName());
 
-      // tpl:template
-      string txQueryTpl = $@"
+    // tpl:template
+    string txQueryTpl = $@"
 SELECT * 
 FROM {txTableName}
 "; //
 
-      Fkb fkbParams = new Fkb();
-      //fkbParams.AddFic(FicOksCoding.OkTableName(), fiTbl.GetITxTableName());
+    Fkb fkbParams = new Fkb();
+    //fkbParams.AddFic(FicOksCoding.OkTableName(), fiTbl.GetITxTableName());
 
-      string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
+    string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
 
-      FiAppConfig.fiLog?.Debug(query);
+    FiAppConfig.fiLog?.Debug(query);
 
-      return query;
-    }
+    return query;
+  }
 
-    public static Fdr DeleteWhereIdCols(Fkf? fkfAll)
-    {
-      Fdr fdrMain = new Fdr();
+  public static Fdr DeleteWhereIdCols(Fkf? fkfAll)
+  {
+    Fdr fdrMain = new Fdr();
 
-      if (fkfAll == null) return fdrMain;
+    if (fkfAll == null) return fdrMain;
 
-      String template = $@"
+    String template = $@"
 DELETE FROM  {FimFtSql.SfTableName().getTempVar()}
 WHERE {FimFtSql.SfWhere().getTempVar()}
 ".Trim();
 
-      StringBuilder sbTxWhere = new StringBuilder();
+    StringBuilder sbTxWhere = new StringBuilder();
 
-      int indexForPriKey = 1;
-      foreach (KeyValuePair<string, FiCol> fiCol in fkfAll)
-      {
-
-        if (fiCol.Value.CheckFiColIfPrimaryKey())
-        {
-          if (indexForPriKey != 1) sbTxWhere.Append(", ");
-          sbTxWhere.Append(fiCol.Value.GetTxDbFieldOrTxFieldName());
-          sbTxWhere.Append(" = @").Append(fiCol.Value.fcTxFieldName);
-          indexForPriKey++;
-          continue;
-        }
-
-      }
-
-      // Where cümleciği gelmemişse
-      if (FiString.IsEmpty(sbTxWhere.ToString()))
-      {
-        fdrMain.fdBoResult = false;
-        fdrMain.refValue = "error:no-where condition";
-        return fdrMain;
-      }
-
-      string tableName = fkfAll.GetTableName();
-      if (FiString.IsEmpty(tableName))
-      {
-        fdrMain.fdBoResult = false;
-        fdrMain.refValue = "error:no-table-name";
-        return fdrMain;
-      }
-
-
-      Fkb fkbTemplate = new Fkb();
-
-      fkbTemplate.AddFim(FimFtSql.SfTableName(), tableName);
-      fkbTemplate.AddFim(FimFtSql.SfWhere(), sbTxWhere.ToString());
-
-      fdrMain.fdBoResult = true;
-      fdrMain.refValue = FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
-
-      return fdrMain;
-    }
-
-
-
-
-
-
-    public static Fdr InsertFicListV2(FicList ficList)
+    int indexForPriKey = 1;
+    foreach (KeyValuePair<string, FiCol> fiCol in fkfAll)
     {
-      Fdr fdrMain = new Fdr();
 
+      if (fiCol.Value.IsPrimaryKey())
+      {
+        if (indexForPriKey != 1) sbTxWhere.Append(", ");
+        sbTxWhere.Append(fiCol.Value.GetTxDbFieldOrTxFieldName());
+        sbTxWhere.Append(" = @").Append(fiCol.Value.fcTxFieldName);
+        indexForPriKey++;
+        continue;
+      }
 
+    }
 
+    // Where cümleciği gelmemişse
+    if (FiString.IsEmpty(sbTxWhere.ToString()))
+    {
+      fdrMain.fdBoResult = false;
+      fdrMain.refValue = "error:no-where condition";
       return fdrMain;
     }
-  } // end class
 
-}
+    string tableName = fkfAll.GetTableName();
+    if (FiString.IsEmpty(tableName))
+    {
+      fdrMain.fdBoResult = false;
+      fdrMain.refValue = "error:no-table-name";
+      return fdrMain;
+    }
+
+
+    Fkb fkbTemplate = new Fkb();
+
+    fkbTemplate.AddFim(FimFtSql.SfTableName(), tableName);
+    fkbTemplate.AddFim(FimFtSql.SfWhere(), sbTxWhere.ToString());
+
+    fdrMain.fdBoResult = true;
+    fdrMain.refValue = FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+
+    return fdrMain;
+  }
+
+
+
+
+
+  /**
+   *
+   */
+  public static Fdr InsertV1(FiQuery fiQuery)
+  {
+    Fdr fdrMain = new Fdr();
+
+    string tableName = fiQuery.GetFkfAllInit().GetTableName();
+
+    if(FiString.IsEmpty(tableName))
+    {
+      fdrMain.fdBoResult = false;
+      fdrMain.txMessage = "error:no-table-name";
+      return fdrMain;
+    }
+
+    String tempInsert = $@"INSERT INTO {FimFtSql.SfTableName().getTempVar()} 
+  ( {FimFtSql.SfFields().getTempVar()} )
+  VALUES ( {FimFtSql.SfFieldsVar().getTempVar()} )";
+
+    StringBuilder sbFields = new StringBuilder();
+    StringBuilder sbVars = new StringBuilder();
+
+    //int indexFields = 1;
+
+    foreach (KeyValuePair<string, FiCol> pair in fiQuery.GetFkfAllInit())
+    {
+
+      if (pair.Value.IsIdAutoIncrement()) continue;
+      if (pair.Value.IsTransient()) continue;
+
+      // if (FiBool.IsTrue(boInsertFieldsOnly))
+      // {
+      //   if (FiBool.IsTrue(pair.boInsertCol))
+      //   {
+      //     if (indexFields != 1) queryFields.Append(", ");
+      //     queryFields.Append(pair.fcTxFieldName);
+      //
+      //     if (indexParams != 1) queryParams.Append(", ");
+      //     queryParams.Append("@").Append(pair.fcTxFieldName);
+      //
+      //     indexFields++;
+      //     indexParams++;
+      //   }
+      //
+      // }
+      // else
+
+      sbFields.Append(FiQugenUtil.FormSqlFieldCommaByFic(pair.Value));
+      sbVars.Append(FiQugenUtil.FormSqlVarCommaByFic(pair.Value));
+
+      //indexFields++;
+    }
+
+    FiString.RTrim(sbFields, FiQugenUtil.GetTxComma());
+    FiString.RTrim(sbVars, FiQugenUtil.GetTxComma());
+
+    Fkb fkbTemplate = new Fkb();
+
+    fkbTemplate.AddFim(FimFtSql.SfTableName(), tableName);
+    fkbTemplate.AddFim(FimFtSql.SfFields(), sbFields.ToString());
+    fkbTemplate.AddFim(FimFtSql.SfFieldsVar(), sbVars.ToString());
+
+    string sql = FiTemplate.ReplaceTemplateParameters(tempInsert, fkbTemplate);
+
+    fiQuery.sql = sql;
+    fdrMain.fdTxVal = sql;
+    fdrMain.fdBoResult = true;
+    return fdrMain;
+  }
+
+} // end class
