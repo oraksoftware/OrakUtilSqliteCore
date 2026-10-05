@@ -332,6 +332,8 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
    * fkfAll kullanarak Insert sorgusu üretir
    *
    * Table ismini qcfTxSqTableName alanından alır. Eğer bu alan yoksa hata döner.
+   *
+   * Sorguyu fiQuery.sql alanına yazar
    */
   public static Fdr GenInsertV1(FiQuery fiQuery)
   {
