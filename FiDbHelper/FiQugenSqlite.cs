@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     fkbParams.Add("tableName", qcfTxSqTableName.fcTxHeader);
     fkbParams.Add("tableFields", sbFields.ToString());
 
-    string createQuery = FiTemplate.ReplaceTemplateParameters(tempQuery, fkbParams);
+    string createQuery = FiTemplate.ReplaceTemplateParams(tempQuery, fkbParams);
 
     return createQuery;
   }
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     fkbTemplate.AddFim(FimFtSql.SfFields(), sbFields.ToString());
     fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), sbVars.ToString());
 
-    return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+    return FiTemplate.ReplaceTemplateParams(template, fkbTemplate);
   }
 
 
@@ -225,7 +225,7 @@ WHERE {{txWhere}} ";
     fkbTemplate.Add("csvFields", queryFields.ToString());
     fkbTemplate.Add("txWhere", sbWhereFields.ToString());
 
-    return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+    return FiTemplate.ReplaceTemplateParams(template, fkbTemplate);
   }
 
 
@@ -261,7 +261,7 @@ FROM {txTableName}
     Fkb fkbParams = new Fkb();
     //fkbParams.AddFic(FicOksCoding.OkTableName(), fiTbl.GetITxTableName());
 
-    string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
+    string query = FiTemplate.ReplaceTemplateParams(txQueryTpl.Trim(), fkbParams);
 
     FiAppConfig.fiLog?.Debug(query);
 
@@ -319,7 +319,7 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
     fkbTemplate.AddFim(FimFtSql.SfWhere(), sbTxWhere.ToString());
 
     fdrMain.fdBoResult = true;
-    fdrMain.refValue = FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
+    fdrMain.refValue = FiTemplate.ReplaceTemplateParams(template, fkbTemplate);
 
     return fdrMain;
   }
@@ -394,7 +394,50 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
     fkbTemplate.AddFim(FimFtSql.SfFields(), sbFields.ToString());
     fkbTemplate.AddFim(FimFtSql.SfFieldsVar(), sbVars.ToString());
 
-    string sql = FiTemplate.ReplaceTemplateParameters(tempInsert, fkbTemplate);
+    string sql = FiTemplate.ReplaceTemplateParams(tempInsert, fkbTemplate);
+
+    fiQuery.sql = sql;
+    fdrMain.fdTxVal = sql;
+    fdrMain.fdBoResult = true;
+    return fdrMain;
+  }
+
+  /**
+   * fkfAll kullanarak Select sorgusu üretir
+   */
+  public static Fdr GenSelectAllV1(FiQuery fiQuery)
+  {
+    Fdr fdrMain = new Fdr();
+
+    string tableName = fiQuery.GetFkfAllInit().GetTableName();
+
+    if (FiString.IsEmpty(tableName))
+    {
+      fdrMain.fdBoResult = false;
+      fdrMain.txMessage = "error:no-table-name";
+      return fdrMain;
+    }
+
+    String tempInsert = $@"SELECT {FimFtSql.SfFields().getTempVar()} 
+  FROM {FimFtSql.SfTableName().getTempVar()}";
+
+    StringBuilder sbFields = new StringBuilder();
+
+    foreach (KeyValuePair<string, FiCol> pair in fiQuery.GetFkfAllInit())
+    {
+      if (pair.Value.IsTransient()) continue;
+
+      sbFields.Append(FiQugenUtil.FormSqlFieldCommaByFic(pair.Value));
+    }
+
+    FiString.RTrim(sbFields, FiQugenUtil.GetTxComma());
+
+    Fkb fkbTemplate = new Fkb();
+
+    fkbTemplate.AddFim(FimFtSql.SfTableName(), tableName);
+    fkbTemplate.AddFim(FimFtSql.SfFields(), sbFields.ToString());
+
+    string sql = FiTemplate.ReplaceTemplateParams(tempInsert, fkbTemplate);
 
     fiQuery.sql = sql;
     fdrMain.fdTxVal = sql;

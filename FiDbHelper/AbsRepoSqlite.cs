@@ -125,7 +125,10 @@ public abstract class AbsRepoSqlite : IRepoSqLite
   {
     Fdr fdrMain = new Fdr();
 
+    FiQuery fiQuery = new FiQuery();
+    fiQuery.fkfAll = GetFkfAll();
 
+    FiQugenSqlite.GenSelectAllV1(fiQuery);
 
     return fdrMain;
   }
