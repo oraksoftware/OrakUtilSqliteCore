@@ -64,7 +64,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
     /**
      * Repo tanımındaki GetFkfAll metodu ile sorgu oluşturur.
      */
-    public Fdr FiInsertV2(Fkb fkbEntity)
+    public Fdr FiInsertV1(Fkb fkbEntity)
     {
       //fiQuery.fkfAll = GetFkfAll();
       FiQuery fiQuery = new FiQuery();

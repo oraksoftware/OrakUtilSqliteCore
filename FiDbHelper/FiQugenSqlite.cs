@@ -87,24 +87,24 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
   /**
    * Alanın genel tipini verir int,text,decimal gibi
    */
-  private static string ConvertColTypeToGeneralType(string ofcTxColType)
+  private static string ConvertColTypeToGeneralType(string fcTxColType)
   {
-    if (ofcTxColType == null) return "";
+    if (fcTxColType == null) return "";
 
-    if (ofcTxColType.Equals("tint", StringComparison.InvariantCultureIgnoreCase)
-      || ofcTxColType.Equals("int", StringComparison.InvariantCultureIgnoreCase)
+    if (fcTxColType.Equals("tint", StringComparison.InvariantCultureIgnoreCase)
+      || fcTxColType.Equals("int", StringComparison.InvariantCultureIgnoreCase)
     ) return "INTEGER";
 
-    if (ofcTxColType.Equals("nvarchar", StringComparison.InvariantCultureIgnoreCase)
-      || ofcTxColType.Equals("varchar", StringComparison.InvariantCultureIgnoreCase)
+    if (fcTxColType.Equals("nvarchar", StringComparison.InvariantCultureIgnoreCase)
+      || fcTxColType.Equals("varchar", StringComparison.InvariantCultureIgnoreCase)
     ) return "TEXT";
 
-    if (ofcTxColType.Equals("double", StringComparison.InvariantCultureIgnoreCase)
-      || ofcTxColType.Equals("float", StringComparison.InvariantCultureIgnoreCase)
-      || ofcTxColType.Equals("decimal", StringComparison.InvariantCultureIgnoreCase)
+    if (fcTxColType.Equals("double", StringComparison.InvariantCultureIgnoreCase)
+      || fcTxColType.Equals("float", StringComparison.InvariantCultureIgnoreCase)
+      || fcTxColType.Equals("decimal", StringComparison.InvariantCultureIgnoreCase)
     ) return "DECIMAL";
 
-    return ofcTxColType;
+    return fcTxColType;
   }
 
   private static string GetLengthDef(FiCol fiCol)
