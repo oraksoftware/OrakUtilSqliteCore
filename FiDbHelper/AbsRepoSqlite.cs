@@ -71,7 +71,7 @@ namespace OrakUtilSqliteCore.FiDbHelper
       fiQuery.fkfAll = GetFkfAll();
       fiQuery.fkbParams = fkbEntity;
 
-      Fdr fdrSql = FiQugenSqlite.InsertV1(fiQuery);
+      Fdr fdrSql = FiQugenSqlite.GenInsertV1(fiQuery);
 
       if(!fdrSql.IsTrueBoResult()) return fdrSql;
 

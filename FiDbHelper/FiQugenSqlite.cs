@@ -9,9 +9,9 @@ namespace OrakUtilSqliteCore.FiDbHelper;
 using System;
 using System.Collections.Generic;
 using System.Text;
-public class FiQugenSqlite
+public static class FiQugenSqlite
 {
-  public static string CreateTable(Fkf fkfAll)
+  public static string GenCreateTableIfNotExist(Fkf fkfAll)
   {
     string tempQuery = @"
 CREATE TABLE IF NOT EXISTS {{tableName}} (
@@ -33,10 +33,7 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     {
       FiCol fiCol = keyValuePair.Value;
 
-      if (FiBool.IsTrue(fiCol.fcBoTransient))
-      {
-        continue;
-      }
+      if (fiCol.IsTransient()) continue;
 
       if (index > 0)
       {
@@ -127,69 +124,8 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     return "";
   }
 
-  // insert
-
-  public static String InsertFiCols(IFiTableMeta iFiTableMeta, List<FiCol> listFields, bool? boInserFieldsOnly)
-  {
-
-    String template = "INSERT INTO {{tableName}} ( {{csvFields}} ) \n"
-      + " VALUES ( {{paramFields}} )";
-
-    StringBuilder queryFields = new StringBuilder();
-    StringBuilder queryParams = new StringBuilder();
-
-    int indexFields = 1;
-    int indexParams = 1;
-
-    foreach (FiCol fiCol in listFields)
-    {
-
-      if (fiCol.IsPrimaryKey()) continue;
-
-      if (FiBool.IsTrue(boInserFieldsOnly))
-      {
-
-        if (FiBool.IsTrue(fiCol.boInsertCol))
-        {
-
-          if (indexFields != 1) queryFields.Append(", ");
-          queryFields.Append(fiCol.fcTxFieldName);
-
-          if (indexParams != 1) queryParams.Append(", ");
-          queryParams.Append("@").Append(fiCol.fcTxFieldName);
-
-          indexFields++;
-          indexParams++;
-        }
-
-      }
-      else
-      {
-
-        if (indexFields != 1) queryFields.Append(", ");
-        queryFields.Append(fiCol.fcTxFieldName);
-
-        if (indexParams != 1) queryParams.Append(", ");
-        queryParams.Append("@").Append(fiCol.fcTxFieldName);
-
-        indexFields++;
-        indexParams++;
-      }
-
-    }
-
-    Fkb fkbTemplate = new Fkb();
-    fkbTemplate.Add("tableName", iFiTableMeta.GetITxTableName());
-    fkbTemplate.Add("csvFields", queryFields.ToString());
-    fkbTemplate.Add("paramFields", queryParams.ToString());
-
-    return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
-  }
-
-
   public static String InsertFics(List<FiCol> listFields, bool? boInsertFieldsOnly)
   {
-
     FimFtSql.SfTableName();
     FimFtSql.SfFields();
     FimFtSql.SfTxFieldsVar();
@@ -197,8 +133,8 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
     String template = "INSERT INTO {{sfTableName}} ( {{sfTxFields}} ) \n"
       + " VALUES ( {{sfTxFieldsVar}} )";
 
-    StringBuilder queryFields = new StringBuilder();
-    StringBuilder queryParams = new StringBuilder();
+    StringBuilder sbFields = new StringBuilder();
+    StringBuilder sbVars = new StringBuilder();
 
     int indexFields = 1;
     int indexParams = 1;
@@ -214,11 +150,11 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
         if (FiBool.IsTrue(fiCol.boInsertCol))
         {
 
-          if (indexFields != 1) queryFields.Append(", ");
-          queryFields.Append(fiCol.fcTxFieldName);
+          if (indexFields != 1) sbFields.Append(", ");
+          sbFields.Append(fiCol.fcTxFieldName);
 
-          if (indexParams != 1) queryParams.Append(", ");
-          queryParams.Append("@").Append(fiCol.fcTxFieldName);
+          if (indexParams != 1) sbVars.Append(", ");
+          sbVars.Append("@").Append(fiCol.fcTxFieldName);
 
           indexFields++;
           indexParams++;
@@ -228,11 +164,11 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
       else
       {
 
-        if (indexFields != 1) queryFields.Append(", ");
-        queryFields.Append(fiCol.fcTxFieldName);
+        if (indexFields != 1) sbFields.Append(", ");
+        sbFields.Append(fiCol.fcTxFieldName);
 
-        if (indexParams != 1) queryParams.Append(", ");
-        queryParams.Append("@").Append(fiCol.fcTxFieldName);
+        if (indexParams != 1) sbVars.Append(", ");
+        sbVars.Append("@").Append(fiCol.fcTxFieldName);
 
         indexFields++;
         indexParams++;
@@ -242,8 +178,8 @@ CREATE TABLE IF NOT EXISTS {{tableName}} (
 
     Fkb fkbTemplate = new Fkb();
     fkbTemplate.AddFim(FimFtSql.SfTableName(), "");
-    fkbTemplate.AddFim(FimFtSql.SfFields(), queryFields.ToString());
-    fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), queryParams.ToString());
+    fkbTemplate.AddFim(FimFtSql.SfFields(), sbFields.ToString());
+    fkbTemplate.AddFim(FimFtSql.SfTxFieldsVar(), sbVars.ToString());
 
     return FiTemplate.ReplaceTemplateParameters(template, fkbTemplate);
   }
@@ -293,23 +229,23 @@ WHERE {{txWhere}} ";
   }
 
 
-  public static string SelectAll1(IFiTableMeta ifiTbl)
-  {
-    // tpl:template
-    string txQueryTpl = $@"
-SELECT * 
-FROM {FicOksCoding.OkTableName().fnmTemplate()}
-"; //
-
-    Fkb fkbParams = new Fkb();
-    fkbParams.AddFic(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
-
-    string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
-
-    FiAppConfig.fiLog?.Debug(query);
-
-    return query;
-  }
+//   public static string SelectAll1(IFiTableMeta ifiTbl)
+//   {
+//     // tpl:template
+//     string txQueryTpl = $@"
+// SELECT *
+// FROM {FicOksCoding.OkTableName().fnmTemplate()}
+// "; //
+//
+//     Fkb fkbParams = new Fkb();
+//     fkbParams.AddFic(FicOksCoding.OkTableName(), ifiTbl.GetITxTableName());
+//
+//     string query = FiTemplate.ReplaceTemplateParameters(txQueryTpl.Trim(), fkbParams);
+//
+//     FiAppConfig.fiLog?.Debug(query);
+//
+//     return query;
+//   }
 
 
   public static string SelectAllV2(Fkf fkfAll)
@@ -393,15 +329,17 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
 
 
   /**
+   * fkfAll kullanarak Insert sorgusu üretir
    *
+   * Table ismini qcfTxSqTableName alanından alır. Eğer bu alan yoksa hata döner.
    */
-  public static Fdr InsertV1(FiQuery fiQuery)
+  public static Fdr GenInsertV1(FiQuery fiQuery)
   {
     Fdr fdrMain = new Fdr();
 
     string tableName = fiQuery.GetFkfAllInit().GetTableName();
 
-    if(FiString.IsEmpty(tableName))
+    if (FiString.IsEmpty(tableName))
     {
       fdrMain.fdBoResult = false;
       fdrMain.txMessage = "error:no-table-name";
@@ -419,7 +357,6 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
 
     foreach (KeyValuePair<string, FiCol> pair in fiQuery.GetFkfAllInit())
     {
-
       if (pair.Value.IsIdAutoIncrement()) continue;
       if (pair.Value.IsTransient()) continue;
 
