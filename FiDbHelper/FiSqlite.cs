@@ -50,7 +50,7 @@ public class FiSqLite
       }
       // Execution yapılmadı
       fdrMain.fdBoResult = true;
-      fdrMain.txMessage = "Veritabanı Mevcut.";
+      fdrMain.fdTxMessage = "Veritabanı Mevcut.";
       FiAppConfig.fiLog?.Debug($"Veritabanı mevcut");
       return fdrMain;
     }

@@ -344,7 +344,7 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
     if (FiString.IsEmpty(tableName))
     {
       fdrMain.fdBoResult = false;
-      fdrMain.txMessage = "error:no-table-name";
+      fdrMain.fdTxMessage = "error:no-table-name";
       return fdrMain;
     }
 
@@ -414,7 +414,7 @@ WHERE {FimFtSql.SfWhere().getTempVar()}
     if (FiString.IsEmpty(tableName))
     {
       fdrMain.fdBoResult = false;
-      fdrMain.txMessage = "error:no-table-name";
+      fdrMain.fdTxMessage = "error:no-table-name";
       return fdrMain;
     }
 
